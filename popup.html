@@ -9,8 +9,10 @@
 <body>
     <!-- SETUP VIEW -->
     <div id="setup-view" class="view active">
-        <h2>Welcome to SyncPad</h2>
-        <p>Set up this device to start syncing.</p>
+        <div class="setup-header">
+            <h2>Welcome to SyncPad</h2>
+            <p>Set up this device to start syncing.</p>
+        </div>
         
         <div class="setup-buttons">
             <button id="btn-master" class="btn primary">I am Master Device</button>
@@ -18,13 +20,13 @@
         </div>
 
         <div id="master-setup" class="hidden">
-            <p>Save these 25 words. You will need them to connect other devices.</p>
+            <p class="instruction">Save these 25 words. You will need them to connect other devices.</p>
             <div id="seed-display" class="seed-box"></div>
             <button id="btn-master-done" class="btn primary">I saved them, Continue</button>
         </div>
 
         <div id="slave-setup" class="hidden">
-            <p>Enter the 25-word phrase from your Master device (separated by spaces).</p>
+            <p class="instruction">Enter the 25-word phrase from your Master device.</p>
             <textarea id="seed-input" placeholder="Enter 25 words here..."></textarea>
             <button id="btn-slave-done" class="btn primary">Connect</button>
             <p id="slave-error" class="error-text hidden">Invalid phrase length. Must be 25 words.</p>
@@ -33,30 +35,49 @@
 
     <!-- MAIN VIEW -->
     <div id="main-view" class="view hidden">
-        <div class="tabs">
-            <button id="tab-clipboard" class="tab-btn active">Clipboard</button>
-            <button id="tab-notepad" class="tab-btn">Notepad</button>
+        <div class="header">
+            <div class="tabs-container">
+                <div class="tabs-bg"></div>
+                <button id="tab-clipboard" class="tab-btn active">Clipboard</button>
+                <button id="tab-notepad" class="tab-btn">Notes</button>
+            </div>
         </div>
         
         <div class="tab-content">
             <!-- CLIPBOARD -->
             <div id="content-clipboard" class="content-pane active">
-                <button id="btn-capture-clipboard" class="btn primary">Push Current Clipboard</button>
-                <div id="clipboard-list">
+                <div class="action-bar">
+                    <button id="btn-capture-clipboard" class="btn primary">Push Current Clipboard</button>
+                </div>
+                <div id="clipboard-list" class="list-container">
                     <!-- Items go here -->
                 </div>
             </div>
 
             <!-- NOTEPAD -->
             <div id="content-notepad" class="content-pane hidden">
-                <textarea id="notepad-textarea" maxlength="10000" placeholder="Type your notes here..."></textarea>
-                <div class="notepad-footer">
-                    <span id="char-count">0 / 10000</span>
-                    <button id="btn-sync-notepad" class="btn primary">Save & Sync</button>
+                <div class="action-bar">
+                    <button id="btn-new-note" class="btn primary">+ New Note</button>
                 </div>
-                <div id="sync-status" class="status-text"></div>
+                
+                <!-- NEW NOTE EDITOR -->
+                <div id="note-editor" class="hidden">
+                    <textarea id="notepad-textarea" maxlength="10000" placeholder="Type your notes here..."></textarea>
+                    <div class="notepad-footer">
+                        <span id="char-count">0 / 10000</span>
+                        <div class="editor-buttons">
+                            <button id="btn-cancel-note" class="btn secondary small">Cancel</button>
+                            <button id="btn-save-note" class="btn primary small">Save</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="notepad-list" class="list-container">
+                    <!-- Saved notes go here -->
+                </div>
             </div>
         </div>
+        <div id="sync-status" class="status-indicator hidden">Synced</div>
     </div>
 
     <!-- Bip39 Wordlist (simplified) -->
