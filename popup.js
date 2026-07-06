@@ -12,6 +12,7 @@ let notepadData = [];
 let currentPhrase = "";
 
 // DOM Elements
+const loadingOverlay = document.getElementById('loading-overlay');
 const setupView = document.getElementById('setup-view');
 const mainView = document.getElementById('main-view');
 
@@ -25,7 +26,6 @@ const slaveError = document.getElementById('slave-error');
 
 const tabClipboard = document.getElementById('tab-clipboard');
 const tabNotepad = document.getElementById('tab-notepad');
-const tabsBg = document.querySelector('.tabs-bg');
 const contentClipboard = document.getElementById('content-clipboard');
 const contentNotepad = document.getElementById('content-notepad');
 
@@ -54,6 +54,8 @@ const btnCloseSettings = document.getElementById('btn-close-settings');
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
+    loadingOverlay.classList.remove('hidden');
+    
     const data = await chrome.storage.local.get(['seedPhrase']);
     if (data.seedPhrase) {
         currentPhrase = data.seedPhrase;
@@ -63,6 +65,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         showSetupView();
     }
+    
+    loadingOverlay.classList.add('hidden');
 });
 
 async function initializeSession(phrase) {
@@ -100,6 +104,7 @@ function showSyncStatus(msg = "Synced") {
 
 // Setup Events
 btnMaster.addEventListener('click', async () => {
+    loadingOverlay.classList.remove('hidden');
     // Generate immediately and log in!
     const phrase = generateSeedPhrase();
     currentPhrase = phrase;
@@ -107,6 +112,7 @@ btnMaster.addEventListener('click', async () => {
     await initializeSession(phrase);
     showMainView();
     
+    loadingOverlay.classList.add('hidden');
     // Auto-open settings so they see their phrase
     btnSettings.click();
 });
@@ -130,7 +136,6 @@ btnSlaveDone.addEventListener('click', async () => {
         return;
     }
     
-    // Check if words are valid
     const words = phrase.split(' ');
     const invalidWord = words.find(w => !WORDLIST.includes(w));
     if (invalidWord) {
@@ -140,11 +145,15 @@ btnSlaveDone.addEventListener('click', async () => {
     }
 
     slaveError.classList.add('hidden');
+    loadingOverlay.classList.remove('hidden');
+    
     currentPhrase = phrase;
     await chrome.storage.local.set({ seedPhrase: phrase });
     await initializeSession(phrase);
     showMainView();
     await fetchFromSupabase();
+    
+    loadingOverlay.classList.add('hidden');
 });
 
 // Settings / Logout Events
@@ -159,9 +168,9 @@ btnCloseSettings.addEventListener('click', () => {
 
 btnCopySeed.addEventListener('click', async () => {
     await navigator.clipboard.writeText(currentPhrase);
-    const originalText = btnCopySeed.textContent;
+    const originalContent = btnCopySeed.innerHTML;
     btnCopySeed.textContent = "Copied!";
-    setTimeout(() => { btnCopySeed.textContent = originalText; }, 2000);
+    setTimeout(() => { btnCopySeed.innerHTML = originalContent; }, 2000);
 });
 
 btnLogout.addEventListener('click', async () => {
@@ -185,7 +194,6 @@ btnLogout.addEventListener('click', async () => {
 tabClipboard.addEventListener('click', () => {
     tabClipboard.classList.add('active');
     tabNotepad.classList.remove('active');
-    tabsBg.style.transform = 'translateX(0)';
     
     contentClipboard.classList.add('active');
     contentClipboard.classList.remove('hidden');
@@ -196,7 +204,6 @@ tabClipboard.addEventListener('click', () => {
 tabNotepad.addEventListener('click', () => {
     tabNotepad.classList.add('active');
     tabClipboard.classList.remove('active');
-    tabsBg.style.transform = 'translateX(100%)';
     
     contentNotepad.classList.add('active');
     contentNotepad.classList.remove('hidden');
@@ -209,17 +216,29 @@ btnCaptureClipboard.addEventListener('click', async () => {
     try {
         const text = await navigator.clipboard.readText();
         if (text) {
-            clipboardData.unshift({
-                text: text,
-                date: new Date().toISOString()
-            });
-            if (clipboardData.length > 50) clipboardData.length = 50;
+            loadingOverlay.classList.remove('hidden');
+            
+            // Fix race condition: Fetch latest from server first!
+            await fetchFromSupabase();
+            
+            // Check if already on top to avoid duplicates
+            if (clipboardData.length === 0 || clipboardData[0].text !== text) {
+                clipboardData.unshift({
+                    text: text,
+                    date: new Date().toISOString()
+                });
+                if (clipboardData.length > 50) clipboardData.length = 50;
+            }
+            
             renderClipboard();
             await pushToSupabase();
+            
+            loadingOverlay.classList.add('hidden');
             showSyncStatus("Clipboard Pushed");
         }
     } catch (e) {
         console.error("Failed to read clipboard:", e);
+        loadingOverlay.classList.add('hidden');
     }
 });
 
@@ -245,7 +264,7 @@ function renderClipboard() {
         
         div.addEventListener('click', async () => {
             await navigator.clipboard.writeText(item.text);
-            div.style.backgroundColor = 'rgba(10, 132, 255, 0.2)'; // blue flash
+            div.style.backgroundColor = 'var(--accent)';
             setTimeout(() => { div.style.backgroundColor = ''; }, 300);
         });
         
@@ -259,11 +278,13 @@ btnNewNote.addEventListener('click', () => {
     notepadTextarea.value = '';
     charCount.textContent = '0 / 10000';
     notepadTextarea.focus();
+    btnNewNote.classList.add('hidden');
 });
 
 btnCancelNote.addEventListener('click', () => {
     noteEditor.classList.add('hidden');
     notepadTextarea.value = '';
+    btnNewNote.classList.remove('hidden');
 });
 
 notepadTextarea.addEventListener('input', () => {
@@ -273,6 +294,11 @@ notepadTextarea.addEventListener('input', () => {
 btnSaveNote.addEventListener('click', async () => {
     const text = notepadTextarea.value.trim();
     if (text) {
+        loadingOverlay.classList.remove('hidden');
+        
+        // Fix race condition: Fetch latest from server first!
+        await fetchFromSupabase();
+        
         notepadData.unshift({
             text: text,
             date: new Date().toISOString()
@@ -280,8 +306,12 @@ btnSaveNote.addEventListener('click', async () => {
         if (notepadData.length > 50) notepadData.length = 50;
         
         noteEditor.classList.add('hidden');
+        btnNewNote.classList.remove('hidden');
         renderNotepad();
+        
         await pushToSupabase();
+        
+        loadingOverlay.classList.add('hidden');
         showSyncStatus("Note Saved");
     }
 });
@@ -308,7 +338,7 @@ function renderNotepad() {
         
         div.addEventListener('click', async () => {
             await navigator.clipboard.writeText(item.text);
-            div.style.backgroundColor = 'rgba(10, 132, 255, 0.2)'; // blue flash
+            div.style.backgroundColor = 'var(--accent)';
             setTimeout(() => { div.style.backgroundColor = ''; }, 300);
         });
         
@@ -337,14 +367,13 @@ async function fetchFromSupabase() {
         if (data && data.length > 0) {
             const row = data[0];
             
-            // Decrypt Notepad (now parsing as JSON array)
+            // Decrypt Notepad
             if (row.notepad) {
                 const decryptedNotepadStr = await decryptData(row.notepad, AES_KEY);
                 try {
                     const parsed = JSON.parse(decryptedNotepadStr);
                     if (Array.isArray(parsed)) notepadData = parsed;
                 } catch (e) {
-                    // Backwards compatibility
                     notepadData = [{ text: decryptedNotepadStr, date: new Date().toISOString() }];
                 }
                 renderNotepad();
