@@ -12,6 +12,17 @@ SyncPad was built with one core philosophy: **Your data belongs only to you.** U
 - **Modern & Lightweight:** Designed with a clean, distraction-free aesthetic (inspired by Shadcn UI) that looks beautiful in both light and dark modes.
 - **Multi-Language Support:** Currently available in English, Turkish, German, and French.
 
+### Installation (Developer Mode)
+
+Since this extension is not yet published on the Chrome Web Store, you can easily install it locally:
+
+1. Clone or download this repository to your computer.
+2. Open Google Chrome and navigate to `chrome://extensions/`.
+3. Enable **Developer mode** using the toggle switch in the top right corner.
+4. Click the **Load unpacked** button in the top left.
+5. Select the `clipboard-sync-extension` folder.
+6. The extension is now installed! You can pin it to your toolbar for easy access.
+
 ### How to Use
 
 1. **Install the Extension:** Load the extension into your Chrome browser.

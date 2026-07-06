@@ -1,7 +1,7 @@
 // background.js
 
 // Import config (use absolute path to avoid Chrome service worker path bugs)
-importScripts("scripts/config.js");
+importScripts("/scripts/config.js");
 
 chrome.runtime.onInstalled.addListener(() => {
     // 3 days = 3 * 24 * 60 = 4320 minutes
