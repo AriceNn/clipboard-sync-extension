@@ -107,7 +107,9 @@ async function migrateToV2(phrase) {
     if (typeof VERCEL_API_URL !== 'undefined' && !VERCEL_API_URL.includes('YOUR_VERCEL_APP_URL')) {
         try {
             const url = `${VERCEL_API_URL}?id=eq.${legacyKeys.documentId}&select=*`;
-            const res = await fetch(url);
+            const res = await fetch(url, {
+                headers: { 'x-proxy-secret': PROXY_SECRET }
+            });
 
             if (res.ok) {
                 const rows = await res.json();
@@ -567,7 +569,9 @@ async function fetchFromSupabase() {
 
     try {
         const url = `${VERCEL_API_URL}?id=eq.${DOC_ID}&select=*`;
-        const res = await fetch(url);
+        const res = await fetch(url, {
+            headers: { 'x-proxy-secret': PROXY_SECRET }
+        });
 
         if (!res.ok) throw new Error("Proxy fetch failed");
 
@@ -626,7 +630,8 @@ async function pushToSupabase() {
         const res = await fetch(VERCEL_API_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'x-proxy-secret': PROXY_SECRET
             },
             body: JSON.stringify(payload)
         });

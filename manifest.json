@@ -10,7 +10,7 @@
     "clipboardWrite"
   ],
   "host_permissions": [
-    "https://onfdobqijhaqzrjwqobw.supabase.co/*"
+    "https://clipboard-sync-extension.vercel.app/*"
   ],
   "icons": {
     "16": "assets/icons/icon16.png",

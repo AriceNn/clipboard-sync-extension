@@ -1,7 +1,7 @@
 // background.js
 
-// Import config
-importScripts('config.js');
+// Import config (service worker runs from root, so path is relative to root)
+importScripts('scripts/config.js');
 
 chrome.runtime.onInstalled.addListener(() => {
     // 3 days = 3 * 24 * 60 = 4320 minutes
@@ -25,7 +25,9 @@ async function pingSupabase() {
             url = `${VERCEL_API_URL}?id=eq.${data.docId}&select=id`;
         }
 
-        const res = await fetch(url);
+        const res = await fetch(url, {
+            headers: { 'x-proxy-secret': PROXY_SECRET }
+        });
 
         if (res.ok) {
             console.log("Ping successful at", new Date().toISOString());
