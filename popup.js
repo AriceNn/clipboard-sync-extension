@@ -1,12 +1,8 @@
 // popup.js
 
 // ---------------------------------------------------------
-// SUPABASE CONFIGURATION
-// Replace these with your actual Supabase URL and Anon Key
+// SUPABASE CONFIGURATION is loaded from config.js
 // ---------------------------------------------------------
-const SUPABASE_URL = "YOUR_SUPABASE_URL_HERE";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY_HERE";
-
 // Global state
 let AES_KEY = null;
 let DOC_ID = null;
@@ -97,7 +93,7 @@ btnSlaveDone.addEventListener('click', async () => {
         return;
     }
     slaveError.classList.add('hidden');
-    
+
     // Check if words are valid
     const words = phrase.split(' ');
     const invalidWord = words.find(w => !WORDLIST.includes(w));
@@ -155,7 +151,7 @@ btnCaptureClipboard.addEventListener('click', async () => {
             });
             // Keep only last 50 items
             if (clipboardData.length > 50) clipboardData.length = 50;
-            
+
             renderClipboard();
             await pushToSupabase();
         }
@@ -170,24 +166,24 @@ function renderClipboard() {
         const div = document.createElement('div');
         div.className = 'clipboard-item';
         div.title = "Click to copy";
-        
+
         const textDiv = document.createElement('div');
         textDiv.className = 'clipboard-text';
         textDiv.textContent = item.text;
-        
+
         const dateDiv = document.createElement('div');
         dateDiv.className = 'clipboard-date';
         dateDiv.textContent = new Date(item.date).toLocaleString();
-        
+
         div.appendChild(textDiv);
         div.appendChild(dateDiv);
-        
+
         div.addEventListener('click', async () => {
             await navigator.clipboard.writeText(item.text);
             div.style.backgroundColor = 'rgba(74, 222, 128, 0.2)'; // success flash
             setTimeout(() => { div.style.backgroundColor = ''; }, 300);
         });
-        
+
         clipboardList.appendChild(div);
     });
 }
@@ -197,7 +193,7 @@ function renderClipboard() {
 // ---------------------------------------------------------
 async function fetchFromSupabase() {
     if (SUPABASE_URL.includes('YOUR_SUPABASE_URL')) return; // not configured
-    
+
     try {
         const url = `${SUPABASE_URL}/rest/v1/sync_data?id=eq.${DOC_ID}&select=*`;
         const res = await fetch(url, {
@@ -206,20 +202,20 @@ async function fetchFromSupabase() {
                 'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
             }
         });
-        
+
         if (!res.ok) throw new Error("Supabase fetch failed");
-        
+
         const data = await res.json();
         if (data && data.length > 0) {
             const row = data[0];
-            
+
             // Decrypt Notepad
             if (row.notepad) {
                 const decryptedNotepad = await decryptData(row.notepad, AES_KEY);
                 notepadTextarea.value = decryptedNotepad;
                 charCount.textContent = `${decryptedNotepad.length} / 10000`;
             }
-            
+
             // Decrypt Clipboard
             if (row.clipboard) {
                 const decryptedClipboardStr = await decryptData(row.clipboard, AES_KEY);
@@ -238,21 +234,21 @@ async function fetchFromSupabase() {
 
 async function pushToSupabase() {
     if (SUPABASE_URL.includes('YOUR_SUPABASE_URL')) return; // not configured
-    
+
     try {
         const notepadText = notepadTextarea.value;
         const clipboardStr = JSON.stringify(clipboardData);
-        
+
         const encNotepad = await encryptData(notepadText, AES_KEY);
         const encClipboard = await encryptData(clipboardStr, AES_KEY);
-        
+
         const payload = {
             id: DOC_ID,
             notepad: encNotepad,
             clipboard: encClipboard,
             updated_at: new Date().toISOString()
         };
-        
+
         // Upsert
         const url = `${SUPABASE_URL}/rest/v1/sync_data`;
         const res = await fetch(url, {
@@ -265,7 +261,7 @@ async function pushToSupabase() {
             },
             body: JSON.stringify(payload)
         });
-        
+
         if (!res.ok) {
             console.error(await res.text());
             throw new Error("Supabase push failed");
