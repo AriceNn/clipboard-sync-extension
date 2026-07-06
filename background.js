@@ -15,31 +15,24 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 });
 
 async function pingSupabase() {
-    if (SUPABASE_URL.includes('YOUR_SUPABASE_URL')) return; // Not configured
+    if (VERCEL_API_URL.includes('YOUR_VERCEL_APP_URL')) return; // Not configured
 
     try {
         const data = await chrome.storage.local.get(['docId']);
-        let url = `${SUPABASE_URL}/rest/v1/sync_data?limit=1`;
+        let url = `${VERCEL_API_URL}?limit=1`;
 
-        // If we have a docId, we can just request our own row to be safe.
-        // Otherwise a generic query to keep the project alive.
         if (data.docId) {
-            url = `${SUPABASE_URL}/rest/v1/sync_data?id=eq.${data.docId}&select=id`;
+            url = `${VERCEL_API_URL}?id=eq.${data.docId}&select=id`;
         }
 
-        const res = await fetch(url, {
-            headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            }
-        });
+        const res = await fetch(url);
 
         if (res.ok) {
-            console.log("Supabase ping successful at", new Date().toISOString());
+            console.log("Ping successful at", new Date().toISOString());
         } else {
-            console.error("Supabase ping failed", res.status);
+            console.error("Ping failed", res.status);
         }
     } catch (e) {
-        console.error("Supabase ping error:", e);
+        console.error("Ping error:", e);
     }
 }

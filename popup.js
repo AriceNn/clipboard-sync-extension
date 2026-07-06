@@ -542,18 +542,13 @@ function renderNotepad() {
 // SUPABASE SYNC
 // =========================================================
 async function fetchFromSupabase() {
-    if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR_SUPABASE_URL')) return;
+    if (!VERCEL_API_URL || VERCEL_API_URL.includes('YOUR_VERCEL_APP_URL')) return;
 
     try {
-        const url = `${SUPABASE_URL}/rest/v1/sync_data?id=eq.${DOC_ID}&select=*`;
-        const res = await fetch(url, {
-            headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            }
-        });
+        const url = `${VERCEL_API_URL}?id=eq.${DOC_ID}&select=*`;
+        const res = await fetch(url);
 
-        if (!res.ok) throw new Error("Supabase fetch failed");
+        if (!res.ok) throw new Error("Proxy fetch failed");
 
         const data = await res.json();
         if (data && data.length > 0) {
@@ -588,7 +583,7 @@ async function fetchFromSupabase() {
 }
 
 async function pushToSupabase() {
-    if (!SUPABASE_URL || SUPABASE_URL.includes('YOUR_SUPABASE_URL')) return;
+    if (!VERCEL_API_URL || VERCEL_API_URL.includes('YOUR_VERCEL_APP_URL')) return;
 
     // Enforce 14-day TTL before pushing
     purgeStaleItems();
@@ -607,21 +602,17 @@ async function pushToSupabase() {
             updated_at: new Date().toISOString()
         };
 
-        const url = `${SUPABASE_URL}/rest/v1/sync_data`;
-        const res = await fetch(url, {
+        const res = await fetch(VERCEL_API_URL, {
             method: 'POST',
             headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'resolution=merge-duplicates'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload)
         });
 
         if (!res.ok) {
             console.error(await res.text());
-            throw new Error("Supabase push failed");
+            throw new Error("Proxy push failed");
         }
     } catch (e) {
         console.error("Push error:", e);
