@@ -1,4 +1,4 @@
-# SyncPad - Sync All Your Clipboard And Notes
+# SyncPad - Sync Your Clipboard And Notes
 
 ![SyncPad Banner](assets/banner.png)
 
