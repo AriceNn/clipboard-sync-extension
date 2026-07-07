@@ -1,4 +1,4 @@
-# SyncPad - Sync All Your Clipboard And Notes
+# SyncPad - Secure Clipboard & Notes Sync
 
 ![SyncPad Banner](assets/banner.png)
 
@@ -16,13 +16,13 @@ SyncPad was built with one core philosophy: **Your data belongs only to you.** U
 
 ### Installation (Developer Mode)
 
-Since this extension is not yet published on the Chrome Web Store, you can easily install it locally:
+You can install the extension locally to test or contribute:
 
 1. Clone or download this repository to your computer.
 2. Open Google Chrome and navigate to `chrome://extensions/`.
 3. Enable **Developer mode** using the toggle switch in the top right corner.
 4. Click the **Load unpacked** button in the top left.
-5. Select the `clipboard-sync-extension` folder.
+5. Select the `syncpad` folder.
 6. The extension is now installed! You can pin it to your toolbar for easy access.
 
 ### How to Use
