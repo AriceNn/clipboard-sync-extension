@@ -1,4 +1,4 @@
-# SyncPad & Clipboard
+# SyncPad - Sync All Your Clipboard And Notes
 
 A minimalist, highly secure Chrome extension designed to sync your clipboard history and notes across all your devices seamlessly. 
 

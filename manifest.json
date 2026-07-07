@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "SyncPad & Clipboard",
+  "name": "SyncPad - Sync All Your Clipboard And Notes",
+  "short_name": "SyncPad",
   "version": "1.0.0",
-  "description": "Securely sync your notepad and clipboard history across devices using end-to-end encryption.",
+  "description": "Securely sync your clipboard history and notes across all your devices using true end-to-end encryption. No accounts needed.",
   "permissions": [
     "storage",
     "alarms",
